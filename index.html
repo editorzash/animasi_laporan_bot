@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<!--
+  ZASHA.ONLINE :: terminal intro (satu file, tanpa library)
+  Deploy GitHub Pages: taruh file ini sebagai index.html di root repo.
+  Semua angka/produk di bagian "DATA" pada script di bawah hanyalah contoh tampilan.
+  Ubah sesuka hati: CFG.produk, CFG.harian, CFG.kota, CFG.kanal.
+  Kontrol: SPASI / ENTER / klik / ketuk layar = lanjut (saat masih mengetik = loncat ke akhir tahap).
+-->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#020a06">
+<title>ZASHA.ONLINE</title>
+<meta name="description" content="Selamat datang ZASHA.ONLINE - secure terminal control panel.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23020a06'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' font-family='monospace' font-weight='bold' fill='%232dff8f'%3EZ%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#020a06; --fg:#8df5b8; --g:#2dff8f; --d:#3f7357; --c:#5ee6ff; --a:#ffd23f; --r:#ff5470; --w:#e9fff3;
+    --pad:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden}
+  body{
+    display:flex;align-items:center;justify-content:center;color:var(--fg);
+    font-family:"JetBrains Mono","Fira Code","Cascadia Mono","SF Mono",ui-monospace,Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono","Courier New",monospace;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;cursor:default;
+  }
+  #win{
+    position:relative;display:flex;flex-direction:column;overflow:hidden;
+    width:min(100vw, calc(63ch + 2 * var(--pad)));
+    height:100vh;height:100dvh;
+    background:radial-gradient(120% 90% at 50% 0%, #04140c 0%, var(--bg) 60%);
+    font-size:14px;line-height:1.22;
+  }
+  @media (min-width:900px){
+    :root{--pad:22px}
+    #win{height:calc(100dvh - 32px);border:1px solid #11452c;border-radius:10px;
+      box-shadow:0 0 0 1px #000,0 0 70px rgba(45,255,143,.14),0 30px 80px rgba(0,0,0,.7)}
+  }
+  #bar{
+    flex:none;display:flex;align-items:center;gap:12px;padding:6px var(--pad);
+    background:linear-gradient(#0b1f15,#07150e);border-bottom:1px solid #0f3523;color:var(--d);font-size:.8em;white-space:pre;
+  }
+  .dots{display:flex;gap:6px}
+  .dots i{width:.8em;height:.8em;border-radius:50%;background:#ff5f56;display:block;opacity:.75}
+  .dots i:nth-child(2){background:#ffbd2e}.dots i:nth-child(3){background:#27c93f}
+  #title{flex:1;text-align:center;overflow:hidden}
+  #clock{min-width:8ch;text-align:right}
+  #screen{
+    flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px var(--pad) 18px;
+    white-space:pre;text-shadow:0 0 7px rgba(45,255,143,.33);scrollbar-width:none;
+  }
+  #screen::-webkit-scrollbar{display:none}
+  .ln{min-height:1.22em}
+  .g{color:var(--g)} .d{color:var(--d);text-shadow:none} .c{color:var(--c)} .a{color:var(--a)} .r{color:var(--r)} .w{color:var(--w)}
+  .b{font-weight:700}
+  .inv{background:var(--g);color:#02140b;font-weight:700;text-shadow:none}
+  .cur{display:inline-block;width:1ch;height:1.15em;vertical-align:text-bottom;background:var(--g);box-shadow:0 0 8px var(--g);animation:blink 1.05s steps(1) infinite}
+  .hint{animation:pulse 1.3s ease-in-out infinite}
+  @keyframes blink{50%{opacity:0}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  #status{
+    flex:none;display:flex;justify-content:space-between;gap:1ch;padding:2px var(--pad);
+    background:#16a35a;color:#02140b;font-weight:700;white-space:pre;font-size:.86em;
+  }
+  #status .tab{padding:0 .5ch}
+  #status .tab.on{background:#02140b;color:var(--g)}
+  #tabs{display:flex;gap:0}
+  .fx{position:absolute;inset:0;pointer-events:none;
+    background:
+      repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.2) 3px),
+      radial-gradient(120% 100% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%);
+    mix-blend-mode:multiply}
+  .fx::after{content:"";position:absolute;left:0;right:0;height:18%;top:-20%;
+    background:linear-gradient(to bottom,rgba(45,255,143,0),rgba(45,255,143,.05),rgba(45,255,143,0));
+    animation:beam 7s linear infinite}
+  @keyframes beam{to{top:110%}}
+  #screen{animation:flick 5s steps(1) infinite}
+  @keyframes flick{0%,100%{opacity:1}47%{opacity:.97}48%{opacity:1}73%{opacity:.985}}
+  .glitch #screen{animation:glitch .28s steps(2) 1}
+  @keyframes glitch{
+    0%{transform:none;filter:none}
+    20%{transform:translateX(-7px) skewX(5deg);filter:brightness(2.2) hue-rotate(35deg)}
+    45%{transform:translateX(6px);opacity:.55}
+    70%{transform:translateX(-3px) scaleY(.985);filter:brightness(1.7)}
+    100%{transform:none;filter:none;opacity:1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #screen,.fx::after,.hint{animation:none}
+    .glitch #screen{animation:none}
+  }
+  noscript{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#020a06;color:#2dff8f;font-family:monospace}
+</style>
+</head>
+<body>
+<div id="win" role="application" aria-label="Terminal ZASHA.ONLINE">
+  <div id="bar"><span class="dots"><i></i><i></i><i></i></span><span id="title">zasha@online: ~</span><span id="clock">--:--:--</span></div>
+  <div id="screen"></div>
+  <div id="status"><span>[zasha]</span><span id="tabs"></span><span>SPASI&gt;</span></div>
+  <div class="fx"></div>
+</div>
+<noscript>Aktifkan JavaScript untuk melihat ZASHA.ONLINE.</noscript>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+   DATA  (contoh tampilan - ubah sesuka hati)
+   ===================================================================== */
+const CFG = {
+  host: 'zasha.online',
+  ip: '203.0.113.17',
+  user: 'admin',
+  produk: [
+    { id:'P-1001', nama:'Laravel POS Kasir Pro',  harga:249000, terjual:128 },
+    { id:'P-1002', nama:'Marketplace Kos Script', harga:349000, terjual:74  },
+    { id:'P-1003', nama:'Landing Page Builder',   harga:149000, terjual:203 },
+    { id:'P-1004', nama:'Absensi QR Karyawan',    harga:199000, terjual:91  },
+    { id:'P-1005', nama:'Multi-Vendor Store',     harga:450000, terjual:37  },
+    { id:'P-1006', nama:'Admin Dashboard Pro',    harga:99000,  terjual:312 }
+  ],
+  harian: [24, 31, 27, 35, 42, 22, 15],           // pesanan per hari, 7 hari terakhir (hari ini = terakhir)
+  kota:  [['Jakarta',31],['Surabaya',14],['Bandung',12],['Medan',9],['Yogyakarta',8],['Lainnya',26]],
+  kanal: [['WhatsApp',42],['Instagram',23],['Organik',21],['Referral',14]],
+  pembeli: 612, lisensi: 790, konversi: 3.8, refund: 0.9, komisiPersen: 4
+};
+
+const BANNER_A = ["███████╗ █████╗ ███████╗██╗  ██╗ █████╗ ", "╚══███╔╝██╔══██╗██╔════╝██║  ██║██╔══██╗", "  ███╔╝ ███████║███████╗███████║███████║", " ███╔╝  ██╔══██║╚════██║██╔══██║██╔══██║", "███████╗██║  ██║███████║██║  ██║██║  ██║", "╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝"];
+const BANNER_B = ["    ██████╗ ███╗   ██╗██╗     ██╗███╗   ██╗███████╗", "   ██╔═══██╗████╗  ██║██║     ██║████╗  ██║██╔════╝", "   ██║   ██║██╔██╗ ██║██║     ██║██╔██╗ ██║█████╗  ", "   ██║   ██║██║╚██╗██║██║     ██║██║╚██╗██║██╔══╝  ", "██╗╚██████╔╝██║ ╚████║███████╗██║██║ ╚████║███████╗", "╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝"];
+
+/* =====================================================================
+   UTIL
+   ===================================================================== */
+const COLS = 62;
+const doc = document;
+const $ = s => doc.querySelector(s);
+const win = $('#win'), screen = $('#screen'), tabsEl = $('#tabs'), clockEl = $('#clock'), titleEl = $('#title');
+
+const esc  = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rnd  = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const hex  = n => { let s=''; for(let i=0;i<n;i++) s += rnd(0,15).toString(16); return s; };
+const b64  = n => { const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; let s=''; for(let i=0;i<n;i++) s += c[rnd(0,63)]; return s; };
+const num  = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const rp   = n => 'Rp ' + num(n);
+const pct  = (n,d=1) => n.toFixed(d).replace('.',',') + '%';
+const two  = n => String(n).padStart(2,'0');
+const hms  = d => `${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;
+const hm   = d => `${two(d.getHours())}:${two(d.getMinutes())}`;
+const sp   = (cls,t) => `<span class="${cls}">${esc(t)}</span>`;
+const center = (t,w=COLS) => ' '.repeat(Math.max(0, Math.floor((w - t.length)/2))) + t;
+const inv = (t, w=40) => ' '.repeat(Math.floor((COLS - w)/2)) + `<span class="inv">${esc(center(t, w))}</span>`;
+const meter = (p,w,fillCls='g') => { const f = Math.max(0, Math.min(w, Math.round(p*w))); return `<span class="${fillCls}">${'█'.repeat(f)}</span><span class="d">${'░'.repeat(w-f)}</span>`; };
+
+/* hitungan dari data */
+const P = CFG.produk.map(p => ({...p, omzet: p.harga*p.terjual}));
+const TOTAL = P.reduce((s,p)=>s+p.omzet,0);
+const UNITS = P.reduce((s,p)=>s+p.terjual,0);
+const AVG   = TOTAL/UNITS;
+
+/* =====================================================================
+   ENGINE
+   ===================================================================== */
+let skipping = false;
+const pending = new Set();
+const sleep = ms => skipping ? Promise.resolve() : new Promise(res => {
+  const rec = { t:0, res };
+  rec.t = setTimeout(() => { pending.delete(rec); res(); }, ms);
+  pending.add(rec);
+});
+const sleepRaw = ms => new Promise(r => setTimeout(r, ms));
+function skip(){ skipping = true; pending.forEach(r => { clearTimeout(r.t); r.res(); }); pending.clear(); }
+
+const cursor = doc.createElement('span'); cursor.className = 'cur'; cursor.textContent = ' ';
+const div = cls => { const d = doc.createElement('div'); d.className = 'ln' + (cls ? ' '+cls : ''); return d; };
+const toBottom = () => { screen.scrollTop = screen.scrollHeight; };
+
+function add(html){ cursor.remove(); const d = div(); d.innerHTML = html || ' '; screen.appendChild(d); toBottom(); return d; }
+async function out(html, ms=55){ add(html); await sleep(ms); }
+async function outs(arr, ms=55){ for (const h of arr) await out(h, ms); }
+const blank = (n=1) => { for (let i=0;i<n;i++) add(''); };
+
+const PS1 = '<span class="g">zasha@online</span><span class="d">:</span><span class="c">~</span><span class="d">$ </span>';
+const PSQL = '<span class="c">zasha_store</span><span class="d">=&gt; </span>';
+
+async function typed(prefix, text, o = {}){
+  const { speed=32, pre=220, post=320, mask=false, cls='w' } = o;
+  cursor.remove();
+  const d = div(); d.innerHTML = prefix;
+  const s = doc.createElement('span'); s.className = cls;
+  d.appendChild(s); d.appendChild(cursor); screen.appendChild(d); toBottom();
+  const shown = mask ? '*'.repeat(text.length) : text;
+  await sleep(pre);
+  for (let i=0; i<shown.length; i++){
+    if (skipping){ s.textContent = shown; break; }
+    s.textContent += shown[i];
+    let dly = speed * (0.55 + Math.random()*0.9);
+    if (shown[i] === ' ') dly *= 0.6;
+    if (Math.random() < 0.035) dly += 140;
+    await sleep(dly);
+  }
+  toBottom();
+  await sleep(post);
+  cursor.remove();
+}
+const cmd  = (t,o) => typed(PS1, t, o);
+const sql  = (t,o) => typed(PSQL, t, Object.assign({cls:'a'}, o));
+
+async function bar(label, ms){
+  const W = 24, d = add('');
+  const t0 = performance.now(); let last = 0;
+  const draw = (p, done) => {
+    const f = Math.round(p*W);
+    d.innerHTML = `<span class="d">${esc(label.padEnd(24))}</span><span class="g">[${'█'.repeat(f)}</span><span class="d">${'░'.repeat(W-f)}</span><span class="g">]</span> <span class="w">${String(Math.round(p*100)).padStart(3)}%</span>` + (done ? ' <span class="g">OK</span>' : '');
+  };
+  while (!skipping){
+    const t = (performance.now()-t0)/ms; if (t >= 1) break;
+    let p = t + 0.06*Math.sin(t*14); p = Math.max(last, Math.min(0.99, p)); last = p;
+    draw(p,false); await sleep(45);
+  }
+  draw(1,true); toBottom();
+}
+
+async function spin(label, ms, done='selesai'){
+  const d = add(''); const fr = ['|','/','-','\\']; let i = 0; const t0 = performance.now();
+  while (!skipping && performance.now()-t0 < ms){
+    d.innerHTML = `<span class="a">${fr[i++%4]}</span> ${esc(label)} ...`; await sleep(90);
+  }
+  d.innerHTML = `<span class="g">*</span> ${esc(label)} ... <span class="g">${esc(done)}</span>`; toBottom();
+}
+
+async function step(n, total, label, ms, result='OK', rcls='g'){
+  const d = add(''); const fr = ['|','/','-','\\']; let i = 0; const t0 = performance.now();
+  const dots = '.'.repeat(Math.max(2, 44 - (7 + label.length + 1)));
+  const left = `<span class="c">[${n}/${total}]</span> ${esc(label)} <span class="d">${dots}</span>`;
+  while (!skipping && performance.now()-t0 < ms){ d.innerHTML = `${left} <span class="a">${fr[i++%4]}</span>`; await sleep(80); }
+  d.innerHTML = `${left} <span class="${rcls}">[ ${esc(result)} ]</span>`; toBottom();
+}
+
+async function hexdump(rows, ms){
+  for (let i=0; i<rows; i++){
+    const addr = (0x4a00 + i*8).toString(16).padStart(8,'0');
+    let bytes = '', asc = '';
+    for (let j=0; j<8; j++){ const v = rnd(0,255); bytes += v.toString(16).padStart(2,'0') + ' '; asc += (v>=33 && v<127) ? String.fromCharCode(v) : '.'; }
+    await out(`<span class="d">${addr}  ${bytes}|${esc(asc)}|</span>`, ms);
+  }
+}
+
+function table(cols, rows){
+  const line = (l,m,r) => sp('d', l + cols.map(c => '─'.repeat(c.w+2)).join(m) + r);
+  const bar = sp('d','│');
+  const cell = (c, v) => {
+    const [t, cls] = Array.isArray(v) ? v : [v, ''];
+    let s = String(t); if (s.length > c.w) s = s.slice(0, c.w);
+    s = c.a === 'r' ? s.padStart(c.w) : s.padEnd(c.w);
+    return ` <span class="${cls}">${esc(s)}</span> `;
+  };
+  const res = [line('┌','┬','┐')];
+  res.push(bar + cols.map(c => ` <span class="c b">${esc(c.a==='r' ? c.h.padStart(c.w) : c.h.padEnd(c.w))}</span> `).join(bar) + bar);
+  res.push(line('├','┼','┤'));
+  rows.forEach(r => res.push(bar + r.map((v,i) => cell(cols[i], v)).join(bar) + bar));
+  res.push(line('└','┴','┘'));
+  return res;
+}
+
+function kvbox(title, items, w=60){
+  const inner = w-2, kw = Math.max(...items.map(i => i[0].length)), vw = inner - kw - 5;
+  const res = [sp('d','┌' + ('─ ' + title + ' ').padEnd(inner,'─') + '┐')];
+  items.forEach(([k,v,c='w']) => res.push(sp('d','│') + ' ' + sp('c',k.padEnd(kw)) + sp('d',' : ') + sp(c, String(v).padEnd(vw).slice(0,vw)) + ' ' + sp('d','│')));
+  res.push(sp('d','└' + '─'.repeat(inner) + '┘'));
+  return res;
+}
+
+function kpibox(title, rows, w=60){
+  const inner = w-2;
+  const res = [sp('d','┌' + ('─ ' + title + ' ').padEnd(inner,'─') + '┐')];
+  rows.forEach(([k1,v1,k2,v2]) => res.push(sp('d','│') + ' ' + sp('d',k1.padEnd(17)) + sp('w b',v1.padEnd(15)) + sp('d',k2.padEnd(12)) + sp('w b',v2.padStart(12)) + ' ' + sp('d','│')));
+  res.push(sp('d','└' + '─'.repeat(inner) + '┘'));
+  return res;
+}
+
+const NAMES = ['BOOT','LOGIN ACCESS','VERIFIKASI','CEK DATA','LOADING & IDENTIFY','HASIL'];
+const TABS  = ['boot','login','verif','data','ident','hasil'];
+
+async function header(n){
+  const w = 60, t = `TAHAP ${n}/5 :: ${NAMES[n]}`;
+  await out(sp('g','╔' + '═'.repeat(w-2) + '╗'), 30);
+  await out(sp('g','║') + ' ' + sp('w b', t.padEnd(w-4)) + ' ' + sp('g','║'), 30);
+  await out(sp('g','╚' + '═'.repeat(w-2) + '╝'), 160);
+  blank();
+}
+
+async function banner(){
+  for (const l of BANNER_A) await out(sp('g b', center(l, COLS)), 60);
+  for (const l of BANNER_B) await out(sp('g b', center(l, COLS)), 60);
+}
+
+/* =====================================================================
+   TAHAP
+   ===================================================================== */
+async function splash(){
+  const boot = [
+    ['d','[    0.000000] zasha-kernel 6.8.0 (x86_64) booting'],
+    ['d','[    0.041337] cpu: 8 core(s) online, avx2 ok'],
+    ['d','[    0.118902] mem: 16384 MB ok, ecc enabled'],
+    ['d','[    0.302215] net: eth0 up, 203.0.113.17/24'],
+    ['d','[    0.511760] crypto: aes-ni, chacha20, ed25519 ok'],
+    ['d','[    0.874118] fs: /data mounted (ext4, noatime)'],
+    ['g','[    1.204551] zasha-sshd listening on :2222'],
+    ['g','[    1.390027] zasha-panel service started'],
+    ['g','[    1.402913] system ready.']
+  ];
+  await sleep(350);
+  for (const [c,t] of boot) await out(sp(c,t), 120);
+  await sleep(500);
+  await wipe();
+
+  blank();
+  await out(sp('w b', center('S E L A M A T   D A T A N G')), 250);
+  blank();
+  await banner();
+  blank();
+  await out(sp('d', center('control panel v4.2.1  //  secure terminal')), 200);
+  blank();
+  await outs(kvbox('SISTEM', [
+    ['Host',   CFG.host],
+    ['Kernel', 'zasha-linux 6.8.0-zasha x86_64'],
+    ['Status', 'STANDBY - menunggu operator', 'a'],
+    ['Waktu',  new Date().toDateString() + ' ' + hms(new Date())]
+  ]), 90);
+}
+
+async function s1(){
+  await header(1);
+  await cmd(`ssh -v ${CFG.user}@${CFG.host} -p 2222`, {speed:30});
+  const fp = b64(43);
+  await outs([
+    sp('d','OpenSSH_9.6p1 Ubuntu-3ubuntu13, OpenSSL 3.0.13'),
+    sp('d',`debug1: Connecting to ${CFG.host} [${CFG.ip}] port 2222.`),
+    sp('d','debug1: Connection established.'),
+    sp('d','debug1: identity file ~/.ssh/zasha_ed25519 type 3'),
+    sp('d','debug1: Remote software version ZASHA-SSHD_4.2'),
+    sp('d','debug1: kex: algorithm: curve25519-sha256'),
+    sp('d','debug1: kex: cipher: chacha20-poly1305@openssh.com'),
+    sp('d','debug1: SSH2_MSG_KEX_ECDH_REPLY received'),
+    sp('d',`debug1: host key SHA256:${fp.slice(0,18)}...`),
+    sp('g',`Warning: Permanently added '${CFG.host}' (ED25519).`)
+  ], 110);
+  blank();
+  await out(sp('c b','== LOGIN ACCESS =='), 300);
+  await typed(sp('c','login as: '), CFG.user, {speed:90, post:260});
+  await typed(sp('c',`${CFG.user}@${CFG.host}'s password: `), 'zasha-root-2026', {speed:85, mask:true, post:500});
+  await spin('memeriksa kredensial', 1500, 'cocok');
+  await spin('membuka sesi terenkripsi', 1100, 'siap');
+  blank();
+  await out(inv('>>> ACCESS GRANTED <<<'), 500);
+  blank();
+  const d = new Date(Date.now() - 86400000 - rnd(0, 30000000));
+  const dn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  await outs([
+    sp('w',`Session : 0x${hex(4).toUpperCase()}-${hex(4).toUpperCase()}   Level : OPERATOR (ROOT)`),
+    sp('d',`Last login: ${dn[d.getDay()]} ${mn[d.getMonth()]} ${d.getDate()} ${hms(d)} ${d.getFullYear()} from 10.8.0.4`),
+    '',
+    sp('g b','Welcome to ZASHA.ONLINE (GNU/Linux 6.8.0-zasha x86_64)'),
+    '',
+    sp('d','  System load : ') + sp('w','0.21') + sp('d','          Processes  : ') + sp('w','118'),
+    sp('d','  Memory use  : ') + sp('w','34%') + sp('d','           Users      : ') + sp('w','1'),
+    sp('d','  Disk use    : ') + sp('w','41% of 80GB') + sp('d','   IPv4       : ') + sp('w', CFG.ip)
+  ], 120);
+}
+
+async function s2(){
+  await header(2);
+  await cmd('zasha-verify --operator admin --mode full', {speed:28});
+  await out(sp('d','Zasha Verification Engine v2.7 (build 20261117)'), 200);
+  await out(sp('d','Memuat modul: identity, token, device, license, net'), 350);
+  blank();
+  await step(1,6,'cek identitas operator', 900);
+  await step(2,6,'validasi token sesi (HS512)', 1100);
+  await step(3,6,'pindai sidik jari perangkat', 1300, 'TERPERCAYA');
+  await step(4,6,'verifikasi lisensi panel', 900);
+  await step(5,6,'firewall & rate-limit', 1000, '0 ANCAMAN');
+  await step(6,6,'enkripsi saluran AES-256-GCM', 800);
+  blank();
+  await out(sp('a','Kode OTP dikirim ke perangkat terdaftar.'), 450);
+  const otp = String(rnd(100000, 999999)).split('').join(' ');
+  await typed(sp('c','Masukkan OTP: '), otp, {speed:210, pre:500, post:450});
+  await spin('memvalidasi OTP', 1300, 'VALID (sisa 24s)');
+  blank();
+  await out(sp('d','sha256(session):'), 150);
+  await typed('  ', hex(32), {speed:14, cls:'d', pre:80, post:60});
+  await typed('  ', hex(32), {speed:14, cls:'d', pre:40, post:200});
+  await out(sp('g','hash cocok dengan server.'), 400);
+  blank();
+  await out(inv('[ IDENTITAS TERVERIFIKASI ]'), 500);
+  blank();
+  await outs(kvbox('SESI TERVERIFIKASI', [
+    ['Operator',  CFG.user],
+    ['Perangkat', 'perangkat ini (terpercaya)'],
+    ['Lisensi',   'PANEL-PRO aktif s/d 31-12-2027'],
+    ['Enkripsi',  'AES-256-GCM + TLS 1.3'],
+    ['Skor risiko','0.00 (rendah)', 'g']
+  ]), 110);
+}
+
+async function s3(){
+  await header(3);
+  await cmd('zasha-db connect --db zasha_store --ro', {speed:28});
+  await outs([
+    sp('d','Menghubungkan ke db-core.zasha.online:5432 ...'),
+    sp('d','SSL: TLS 1.3, AES-256-GCM  |  mode: ') + sp('a','READ-ONLY'),
+    sp('d','psql (16.3)  ketik "help" untuk bantuan.')
+  ], 260);
+  blank();
+
+  await sql('\\dt+', {speed:60});
+  const dbrows = [
+    ['products', '6', '16 kB'], ['orders', String(UNITS), '1,2 MB'], ['customers', String(CFG.pembeli), '640 kB'],
+    ['licenses', String(CFG.lisensi), '512 kB'], ['rentals', '43', '48 kB'], ['referral_commissions', '156', '96 kB']
+  ].map(r => [r[0], [r[1],'w'], r[2], ['SYNC','g']]);
+  await outs(table([{h:'Tabel',w:20},{h:'Baris',w:7,a:'r'},{h:'Ukuran',w:9,a:'r'},{h:'Status',w:6}], dbrows), 75);
+  blank();
+
+  await sql('SELECT * FROM products ORDER BY id;', {speed:34});
+  await outs(table(
+    [{h:'ID',w:6},{h:'Produk',w:22},{h:'Harga',w:10,a:'r'},{h:'Terjual',w:7,a:'r'}],
+    P.map(p => [p.id, p.nama, rp(p.harga), [String(p.terjual),'w']])
+  ), 75);
+  await out(sp('d',`(${P.length} rows)`), 300);
+  blank();
+
+  await sql('SELECT * FROM orders ORDER BY id DESC LIMIT 8;', {speed:34});
+  const st = [['LUNAS','g'],['LUNAS','g'],['LISENSI','c'],['LUNAS','g'],['PENDING','a'],['LISENSI','c'],['LUNAS','g'],['LUNAS','g']];
+  const short = { 'Laravel POS Kasir Pro':'POS Kasir Pro','Marketplace Kos Script':'Kos Marketplace','Landing Page Builder':'Landing Builder','Absensi QR Karyawan':'Absensi QR','Multi-Vendor Store':'Multi-Vendor','Admin Dashboard Pro':'Admin Dashbrd' };
+  let tmin = 1;
+  const orows = st.map((s,i) => {
+    const p = P[rnd(0, P.length-1)];
+    const t = new Date(Date.now() - tmin*60000); tmin += rnd(2,9);
+    return [ 'ZS-' + String(UNITS - i).padStart(4,'0'), hm(t), short[p.nama] || p.nama, rp(p.harga), s ];
+  });
+  await outs(table(
+    [{h:'ID',w:7},{h:'Jam',w:5},{h:'Produk',w:15},{h:'Total',w:10,a:'r'},{h:'Status',w:7}], orows
+  ), 80);
+  await out(sp('d','(8 rows)'), 300);
+  blank();
+
+  await sql('SELECT SUM(total) FROM orders WHERE d<=30;', {speed:34});
+  await outs([ sp('d','    sum'), sp('d','-----------'), sp('w b',' ' + String(TOTAL)), sp('d','(1 row)') ], 160);
+  blank();
+  await sql('\\q', {speed:90});
+  blank();
+  await out(sp('c b','[CHECK] integritas data'), 250);
+  await step(1,3,'checksum 6 tabel', 800, 'COCOK');
+  await step(2,3,'baris duplikat', 700, '0');
+  await step(3,3,'relasi yatim (orphan)', 700, '0');
+}
+
+async function s4(){
+  await header(4);
+  await cmd('zasha-analyze --track --identify --range 30d', {speed:26});
+  await out(sp('d','Engine analitik v3.1  |  8 worker  |  0 error'), 300);
+  blank();
+  await out(sp('c b','[LOADING] memuat dataset'), 200);
+  await bar('dataset pesanan', 1500);
+  await bar('katalog produk', 1000);
+  await bar('lisensi aktif', 1200);
+  await bar('log trafik', 1800);
+  await bar('komisi referral', 900);
+  blank();
+  await out(sp('c b','[DECRYPT] blok data 0x4a00 - 0x4a28'), 250);
+  await hexdump(6, 90);
+  await out(sp('g','dekripsi selesai, 0 blok rusak.'), 350);
+  blank();
+
+  const now = Date.now(), tm = m => hms(new Date(now - m*60000 - rnd(0,40)*1000));
+  const oid = 'ZS-' + String(UNITS).padStart(4,'0');
+  const mail = 'b***@gmail.com';
+  await out(sp('c b',`[TRACKING] order ${oid}  pembeli: ${mail}`), 300);
+  await outs([
+    sp('d','  ') + sp('w', tm(6)) + sp('d','  ') + 'lihat produk     ' + sp('d','/produk/pos-kasir-pro'),
+    sp('d','  ') + sp('w', tm(5)) + sp('d','  ') + 'tambah keranjang ' + sp('d','POS Kasir Pro x1'),
+    sp('d','  ') + sp('w', tm(4)) + sp('d','  ') + 'checkout dibuat   ' + sp('a', rp(249000)),
+    sp('d','  ') + sp('w', tm(2)) + sp('d','  ') + 'pembayaran QRIS   ' + sp('g','[ LUNAS ]'),
+    sp('d','  ') + sp('w', tm(2)) + sp('d','  ') + 'lisensi terbit    ' + sp('c',`ZSH-${hex(4).toUpperCase()}-${hex(4).toUpperCase()}-${hex(4).toUpperCase()}`),
+    sp('d','  ') + sp('w', tm(1)) + sp('d','  ') + 'email terkirim    ' + sp('g','[ SENT ]')
+  ], 420);
+  blank();
+
+  await out(sp('c b','[IDENTIFY] mengenali pola pembelian'), 250);
+  await spin('memindai 845 transaksi', 1700, 'selesai');
+  await spin('mencocokkan pola pelanggan', 1400, 'selesai');
+  await spin('mendeteksi anomali & fraud', 1200, 'bersih');
+  blank();
+  const top  = [...P].sort((a,b)=>b.terjual-a.terjual)[0];
+  const topO = [...P].sort((a,b)=>b.omzet-a.omzet)[0];
+  const kota = CFG.kota.slice(0,3).map(k => `${k[0]} ${k[1]}%`).join(', ');
+  const kanal = CFG.kanal.slice(0,2).map(k => `${k[0]} ${k[1]}%`).join(', ');
+  await outs(kvbox('TERIDENTIFIKASI', [
+    ['Terlaris',        `${top.nama} - ${top.terjual} unit`, 'g'],
+    ['Omzet tertinggi', `${topO.nama}`, 'g'],
+    ['Jam ramai',       '20:00 - 22:00 (38% transaksi)'],
+    ['Kota teratas',    kota],
+    ['Kanal terbaik',   kanal],
+    ['Anomali',         '0 terdeteksi', 'g']
+  ]), 200);
+}
+
+async function s5(){
+  await header(5);
+  await cmd('zasha-report --range 30d --format term', {speed:28});
+  await spin('menyusun laporan penjualan', 1600, 'siap');
+  blank();
+  await out(inv('LAPORAN PENJUALAN - 30 HARI TERAKHIR', 60), 300);
+  blank();
+  await outs(kpibox('RINGKASAN', [
+    ['Omzet kotor',    rp(TOTAL),        'Pesanan',   num(UNITS)],
+    ['Rata-rata order', rp(AVG),         'Pembeli',   num(CFG.pembeli)],
+    ['Lisensi aktif',  num(CFG.lisensi), 'Konversi',  pct(CFG.konversi)],
+    ['Komisi referral', rp(TOTAL*CFG.komisiPersen/100), 'Refund', pct(CFG.refund)]
+  ]), 170);
+  blank();
+
+  await out(sp('c b','PRODUK TERLARIS (berdasarkan omzet)'), 200);
+  const sorted = [...P].sort((a,b)=>b.omzet-a.omzet), max = sorted[0].omzet;
+  await out(sp('d',' #  ' + 'Produk'.padEnd(22) + ' ' + 'Omzet'.padStart(13) + '  ' + 'Porsi'), 150);
+  for (let i=0; i<sorted.length; i++){
+    const p = sorted[i];
+    await out(sp('a',' ' + (i+1)) + '  ' + sp('w', p.nama.padEnd(22)) + ' ' + sp('g', rp(p.omzet).padStart(13)) + '  ' + meter(p.omzet/max, 12) + ' ' + sp('d', pct(p.omzet/TOTAL*100).padStart(5)), 190);
+  }
+  blank();
+
+  await out(sp('c b','PENJUALAN 7 HARI TERAKHIR'), 200);
+  const dn = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'], hmax = Math.max(...CFG.harian);
+  for (let i=0; i<7; i++){
+    const dt = new Date(Date.now() - (6-i)*86400000), v = CFG.harian[i];
+    await out(' ' + sp('w', dn[dt.getDay()]) + '  ' + meter(v/hmax, 20) + sp('w b', String(v).padStart(4)) + sp('d','  ') + sp('g', rp(v*AVG).padStart(13)), 170);
+  }
+  blank();
+
+  await out(sp('c b','STATUS SISTEM'), 200);
+  await step(1,3,'sinkronisasi data', 700, 'SELESAI');
+  await step(2,3,'lisensi & pesanan', 700, 'NORMAL');
+  await step(3,3,'keamanan sesi', 700, 'AMAN');
+  blank();
+  await out(inv('SEMUA TAHAP SELESAI'), 500);
+  blank();
+  await banner();
+  blank();
+  await out(sp('w b', center('S E L A M A T   D A T A N G   Z A S H A . O N L I N E')), 300);
+}
+
+/* =====================================================================
+   KONTROL
+   ===================================================================== */
+const stages = [splash, s1, s2, s3, s4, s5];
+let cur = -1, busy = false;
+
+async function wipe(){
+  if (!screen.firstChild) return;
+  win.classList.add('glitch'); await sleepRaw(280);
+  screen.innerHTML = ''; cursor.remove(); win.classList.remove('glitch'); screen.scrollTop = 0;
+}
+
+function setStage(i){
+  tabsEl.querySelectorAll('.tab').forEach((t,k) => t.classList.toggle('on', k === i));
+  titleEl.textContent = `zasha@online: ~ [${TABS[i]}]`;
+}
+
+function endPrompt(i){
+  blank();
+  const hint = i < 5 ? `[ SPASI ] lanjut ke TAHAP ${i+1}/5 : ${NAMES[i+1]}` : '[ SPASI ] ulangi dari awal';
+  add(`<span class="hint a b">&gt;&gt; ${esc(hint)}</span>`);
+  cursor.remove();
+  const d = div(); d.innerHTML = PS1; d.appendChild(cursor); screen.appendChild(d); toBottom();
+}
+
+async function run(i){
+  busy = true; skipping = false;
+  await wipe();
+  setStage(i);
+  await stages[i]();
+  skipping = false;
+  endPrompt(i);
+  cur = i; busy = false;
+}
+
+function advance(){
+  if (busy){ skip(); return; }
+  run(cur >= 5 ? 0 : cur + 1);
+}
+
+/* ukuran font mengikuti layar supaya 62 kolom selalu muat */
+const probe = doc.createElement('span');
+probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:100px;left:-9999px';
+probe.textContent = 'M'.repeat(50);
+function fit(){
+  win.appendChild(probe);
+  const ratio = probe.getBoundingClientRect().width / 50 / 100 || 0.6;
+  probe.remove();
+  const desktop = innerWidth >= 900, pad = desktop ? 22 : 12, margin = desktop ? 32 : 0;
+  const byW = (innerWidth - margin - 2*pad) / ((COLS + 1) * ratio);
+  const byH = (innerHeight - margin - 90) / (30 * 1.22);
+  const fs = Math.max(8, Math.min(byW, Math.max(byH, 12), 22));
+  win.style.fontSize = fs.toFixed(2) + 'px';
+  toBottom();
+}
+
+tabsEl.innerHTML = TABS.map((t,i) => `<span class="tab" data-i="${i}">${i}:${t}</span>`).join(' ');
+addEventListener('resize', fit);
+fit();
+setInterval(() => { clockEl.textContent = hms(new Date()); }, 1000);
+clockEl.textContent = hms(new Date());
+
+addEventListener('keydown', e => {
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight'){ e.preventDefault(); advance(); }
+});
+win.addEventListener('click', advance);
+
+run(0);
+})();
+</script>
+</body>
+</html>
